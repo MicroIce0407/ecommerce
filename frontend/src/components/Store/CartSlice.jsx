@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import Decimal from "decimal.js";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 // const storedCart = JSON.parse(localStorage.getItem("cartState"));
 
@@ -17,9 +18,7 @@ export const fetchCart = createAsyncThunk(
   async (_, thunkAPI) => {
     const userId = localStorage.getItem("userId");
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/cart/${userId}`
-      );
+      const response = await axios.get(`${backendUrl}/api/cart/${userId}`);
       return response.data.items; // 返回購物車商品數據
     } catch (error) {
       return thunkAPI.rejectWithValue(
@@ -38,7 +37,7 @@ export const addItemToCart = createAsyncThunk(
     const price = product.price;
 
     try {
-      await axios.post("http://localhost:5000/api/cart/add", {
+      await axios.post(`${backendUrl}/api/cart/add`, {
         userId,
         productId,
         quantity: 1,
@@ -60,7 +59,7 @@ export const removeItemFromCart = createAsyncThunk(
     const userId = localStorage.getItem("userId");
 
     try {
-      await axios.post("http://localhost:5000/api/cart/remove", {
+      await axios.post(`${backendUrl}/api/cart/remove`, {
         userId,
         productId,
         quantity: 1,
@@ -80,7 +79,7 @@ export const clearCart = createAsyncThunk(
     const userId = localStorage.getItem("userId");
 
     try {
-      await axios.delete("http://localhost:5000/api/cart/clear", {
+      await axios.delete(`${backendUrl}/api/cart/clear`, {
         data: { userId },
       });
       return;

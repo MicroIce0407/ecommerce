@@ -6,23 +6,6 @@ const Cart = require("../models/Cart");
 const { createPayPalPayment } = require("./paymentController");
 const paypalClient = require("../config/paypal");
 
-const updateOrderStatusAndRedirect = async (
-  orderId,
-  status,
-  res,
-  redirectUrl
-) => {
-  try {
-    await Order.findOneAndUpdate({ _id: orderId }, { status: status });
-    console.log(
-      `Redirecting to: ${process.env.FRONTEND_URL}/order-confirmation`
-    );
-    res.redirect(`${process.env.FRONTEND_URL}/order-confirmation`);
-  } catch (error) {
-    res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
-  }
-};
-
 const getOrder = async (req, res) => {
   try {
     const userId = req.params.userId;
@@ -74,12 +57,16 @@ const createOrder = async (req, res) => {
       const paypalLink = await createPayPalPayment(newOrder);
       res.status(200).json({ paymentUrl: paypalLink });
     } else if (paymentMethod === "homeDelivery") {
-      await updateOrderStatusAndRedirect(
-        newOrder._id,
-        "completed",
-        res,
-        `${process.env.FRONTEND_URL}/order-confirmation`
+      await Order.findOneAndUpdate(
+        { _id: newOrder._id },
+        { status: "completed" }
       );
+      await Cart.findOneAndDelete({ userId });
+      res
+        .status(200)
+        .json({
+          redirectUrl: `${process.env.FRONTEND_URL}/order-confirmation`,
+        });
     } else {
       res.status(400).json({ message: "Invalid payment method" });
     }
@@ -94,17 +81,12 @@ const payForSuccess = async (req, res) => {
   try {
     const request = new paypal.orders.OrdersCaptureRequest(token);
     request.requestBody({});
-
     const captureResponse = await paypalClient.execute(request);
 
     if (captureResponse.result.status === "COMPLETED") {
+      await Order.findOneAndUpdate({ _id: orderId }, { status: "completed" });
       await Cart.findOneAndDelete({ userId });
-      await updateOrderStatusAndRedirect(
-        orderId,
-        "completed",
-        res,
-        `${process.env.FRONTEND_URL}/order-confirmation`
-      );
+      res.redirect(`${process.env.FRONTEND_URL}/order-confirmation`);
     } else {
       res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
     }

@@ -3,6 +3,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { login } from "../components/Store/authSlice";
 import axios from "axios";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const AuthForm = () => {
   const navigate = useNavigate();
@@ -28,10 +29,8 @@ const AuthForm = () => {
     const endpoint =
       mode === "register" ? "/api/users/register" : "/api/users/login";
     try {
-      const response = await axios.post(
-        "http://localhost:5000" + endpoint,
-        formData
-      );
+      console.log(backendUrl);
+      const response = await axios.post(backendUrl + endpoint, formData);
 
       if (mode === "login") {
         dispatch(login(response.data));

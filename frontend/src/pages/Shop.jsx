@@ -4,7 +4,8 @@ import ScrollImg from "../components/Shop/ScrollImg.jsx";
 import Goods from "../components/Shop/Goods.jsx";
 import Search from "../components/Shop/Search.jsx";
 
-const iniURL = "http://localhost:5000/api/products";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const iniURL = `${backendUrl}/api/products`;
 
 const Shop = () => {
   const [allGoodsData, setAllGoodsData] = useState([]); // 使用 useState 管理 goodsData 的狀態
@@ -28,7 +29,7 @@ const Shop = () => {
   const changeURL = async (newURL) => {
     let url = iniURL;
     if (newURL !== "") {
-      url = `http://localhost:5000/api/products/category/${newURL}`;
+      url = `${backendUrl}/api/products/category/${newURL}`;
     }
     try {
       let result = await fetch(url);

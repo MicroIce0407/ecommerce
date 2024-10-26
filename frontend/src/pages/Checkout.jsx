@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import withAuth from "../components/Shop/withAuth";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const Checkout = () => {
   const cartItems = useSelector((state) => state.cart.items);
@@ -22,13 +23,12 @@ const Checkout = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/orders",
-        orderData
-      );
+      const response = await axios.post(`${backendUrl}/api/orders`, orderData);
 
       if (response.data.paymentUrl) {
         window.location.href = response.data.paymentUrl;
+      } else if (response.data.redirectUrl) {
+        window.location.href = response.data.redirectUrl;
       }
     } catch (error) {
       console.error("Error during checkout:", error);

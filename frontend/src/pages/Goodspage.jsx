@@ -71,8 +71,9 @@ const Goodspage = () => {
 export default Goodspage;
 
 export async function loader({ params }) {
+  const backendUrl = process.env.BACKEND_URL;
   const id = params.GoodsID;
-  const response = await fetch(`http://localhost:5000/api/products/${id}`);
+  const response = await fetch(`${backendUrl}/api/products/${id}`);
 
   if (!response.ok) {
     throw new Error("Failed to fetching");

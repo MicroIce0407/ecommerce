@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 export default function CheckOrder() {
   const [orders, setOrders] = useState([]);
@@ -8,9 +9,7 @@ export default function CheckOrder() {
   useEffect(() => {
     const getOrders = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:5000/api/orders/${userId}`
-        );
+        const response = await axios.get(`${backendUrl}/api/orders/${userId}`);
         const ordersData = response.data;
         setOrders(ordersData);
       } catch (error) {

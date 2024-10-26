@@ -3,6 +3,7 @@ import ProductList from "../components/Shop/ProductList";
 import ProductForm from "../components/Shop/ProductForm";
 import axios from "axios";
 import withAuth from "../components/Shop/withAuth";
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const ProductManager = () => {
   const [products, setProducts] = useState([]);
@@ -24,7 +25,7 @@ const ProductManager = () => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/products/user/${userId}`,
+          `${backendUrl}/api/products/user/${userId}`,
           config
         );
         setProducts(response.data);
@@ -45,16 +46,12 @@ const ProductManager = () => {
     form.append("userId", localStorage.getItem("userId"));
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/products",
-        form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${backendUrl}/api/products`, form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setProducts((prev) => [...prev, response.data]);
       setAddProduct(false);
@@ -74,7 +71,7 @@ const ProductManager = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:5000/api/products/${productData._id}`,
+        `${backendUrl}/api/products/${productData._id}`,
         form,
         {
           headers: {
@@ -104,7 +101,7 @@ const ProductManager = () => {
 
   const deleteProductHandle = async (prodrctId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/products/${prodrctId}`);
+      await axios.delete(`${backendUrl}/api/products/${prodrctId}`);
       setProducts((prev) =>
         prev.filter((product) => product._id !== prodrctId)
       );

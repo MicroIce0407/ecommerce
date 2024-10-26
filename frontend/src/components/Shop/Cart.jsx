@@ -68,33 +68,36 @@ const Cart = ({ closeCart }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold mb-4">Shopping Cart</h2>
-        <ul className="space-y-3">
-          {cartItems.map((item) => (
-            <li
-              className="flex items-center justify-between"
-              key={item.productId._id}
-            >
-              <section className="w-3/4">
-                {item.productId.title} : {item.quantity} x $
-                {item.productId.price} = ${item.totalPrice}
-              </section>
-              <section className="flex space-x-2">
-                <button
-                  className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                  onClick={() => addItemHandle(item)}
-                >
-                  +
-                </button>
-                <button
-                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  onClick={() => removeItemHandle(item.productId._id)}
-                >
-                  -
-                </button>
-              </section>
-            </li>
-          ))}
-        </ul>
+        {cartItems.length === 0 && <h1>購物車目前沒有東西唷!</h1>}
+        {cartItems.length !== 0 && (
+          <ul className="space-y-3">
+            {cartItems.map((item) => (
+              <li
+                className="flex items-center justify-between"
+                key={item.productId._id}
+              >
+                <section className="w-3/4">
+                  {item.productId.title} : {item.quantity} x $
+                  {item.productId.price} = ${item.totalPrice}
+                </section>
+                <section className="flex space-x-2">
+                  <button
+                    className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
+                    onClick={() => addItemHandle(item)}
+                  >
+                    +
+                  </button>
+                  <button
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    onClick={() => removeItemHandle(item.productId._id)}
+                  >
+                    -
+                  </button>
+                </section>
+              </li>
+            ))}
+          </ul>
+        )}
         <h3 className="mt-6 text-lg font-semibold">Total: $ {totalPrice}</h3>
         <button
           className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600 transition duration-300 mt-4 "
