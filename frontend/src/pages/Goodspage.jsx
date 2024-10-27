@@ -71,7 +71,7 @@ const Goodspage = () => {
 export default Goodspage;
 
 export async function loader({ params }) {
-  const backendUrl = process.env.BACKEND_URL;
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const id = params.GoodsID;
   const response = await fetch(`${backendUrl}/api/products/${id}`);
 
