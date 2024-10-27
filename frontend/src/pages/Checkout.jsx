@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import withAuth from "../components/Shop/withAuth";
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const Checkout = () => {
+  const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart.items);
   const totalPrice = useSelector((state) => state.cart.totalPrice);
   const [address, setAddress] = useState("");
@@ -25,10 +27,10 @@ const Checkout = () => {
     try {
       const response = await axios.post(`${backendUrl}/api/orders`, orderData);
 
-      if (response.data.paymentUrl) {
-        window.location.href = response.data.paymentUrl;
-      } else if (response.data.redirectUrl) {
-        window.location.href = response.data.redirectUrl;
+      if (response.ok) {
+        navigate("/order-confirmation");
+      } else {
+        navigate("/order-failed");
       }
     } catch (error) {
       console.error("Error during checkout:", error);
