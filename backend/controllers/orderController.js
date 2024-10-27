@@ -55,18 +55,14 @@ const createOrder = async (req, res) => {
 
     if (paymentMethod === "paypal") {
       const paypalLink = await createPayPalPayment(newOrder);
-      res.status(200).json({ paymentUrl: paypalLink });
+      res.status(200).json({ message: "Pay for success" });
     } else if (paymentMethod === "homeDelivery") {
       await Order.findOneAndUpdate(
         { _id: newOrder._id },
         { status: "completed" }
       );
       await Cart.findOneAndDelete({ userId });
-      res
-        .status(200)
-        .json({
-          redirectUrl: `${process.env.FRONTEND_URL}/order-confirmation`,
-        });
+      res.status(200).json({ message: "Pay for success" });
     } else {
       res.status(400).json({ message: "Invalid payment method" });
     }
@@ -86,18 +82,18 @@ const payForSuccess = async (req, res) => {
     if (captureResponse.result.status === "COMPLETED") {
       await Order.findOneAndUpdate({ _id: orderId }, { status: "completed" });
       await Cart.findOneAndDelete({ userId });
-      res.redirect(`${process.env.FRONTEND_URL}/order-confirmation`);
+      res.status(200).json({ message: "Pay for success" });
     } else {
-      res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
+      res.status(400).json({ message: "Pay for failed" });
     }
   } catch (error) {
     console.log("Error capturing PayPal order:", error);
-    res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
+    res.status(400).json({ message: "Pay for failed" });
   }
 };
 
 const payForCancel = async (req, res) => {
-  res.redirect(`${FRONTEND_URL}/cart`);
+  res.status(400).json({ message: "Pay for failed" });
 };
 
 module.exports = { getOrder, createOrder, payForSuccess, payForCancel };
