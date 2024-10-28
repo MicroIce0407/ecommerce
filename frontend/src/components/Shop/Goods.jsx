@@ -2,14 +2,11 @@ import { Link } from "react-router-dom";
 
 function Goods(props) {
   return (
-    <li className="list-none">
-      <Link
-        to={`/${props._id}`}
-        className="block transform transition duration-300 hover:scale-105 hover:shadow-lg"
-      >
+    <li className="list-none ">
+      <Link to={`/${props._id}`} className="block">
         <div
           key={props._id}
-          className="max-w-sm bg-white rounded-lg shadow-md overflow-hidden"
+          className="max-w-sm bg-white rounded-lg shadow-md overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg"
         >
           <img
             src={props.image}

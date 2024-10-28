@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import Input from "./Input";
 
 const ProductForm = ({ onSubmit, initialData, Cancel }) => {
   const [formData, setFormData] = useState({
@@ -15,40 +16,35 @@ const ProductForm = ({ onSubmit, initialData, Cancel }) => {
     }
   }, [initialData]);
 
-  const changeHandle = (e) => {
+  const changeHandle = useCallback((e) => {
     const { name, value, files } = e.target;
 
     setFormData((prev) => ({
       ...prev,
       [name]: files ? files[0] : value,
     }));
-  };
+  }, []);
 
   const submitHandle = (e) => {
     e.preventDefault();
     onSubmit(formData);
   };
 
+  const inputClass =
+    "w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200";
+
   return (
     <form onSubmit={submitHandle} className="mt-8 space-y-6">
-      <div>
-        <label
-          htmlFor="title"
-          className="block text-gray-700 font-semibold mb-2"
-        >
-          名稱
-        </label>
-        <input
-          type="text"
-          name="title"
-          id="title"
-          value={formData.title}
-          onChange={changeHandle}
-          placeholder="Product Title"
-          required
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
-        />
-      </div>
+      <Input
+        label="名稱"
+        type="text"
+        name="title"
+        id="title"
+        value={formData.title}
+        onChange={changeHandle}
+        placeholder="商品名稱"
+        required
+      />
       <div>
         <label
           htmlFor="description"
@@ -61,29 +57,21 @@ const ProductForm = ({ onSubmit, initialData, Cancel }) => {
           id="description"
           value={formData.description}
           onChange={changeHandle}
-          placeholder="Product Description"
+          placeholder="商品詳細資訊"
           required
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={inputClass}
         />
       </div>
-      <div>
-        <label
-          htmlFor="price"
-          className="block text-gray-700 font-semibold mb-2"
-        >
-          價格
-        </label>
-        <input
-          type="number"
-          name="price"
-          id="price"
-          value={formData.price}
-          onChange={changeHandle}
-          placeholder="Price"
-          required
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <Input
+        label="價格"
+        type="number"
+        name="price"
+        id="price"
+        value={formData.price}
+        onChange={changeHandle}
+        placeholder="價格"
+        required
+      />
       <div>
         <label
           htmlFor="category"
@@ -97,10 +85,10 @@ const ProductForm = ({ onSubmit, initialData, Cancel }) => {
           value={formData.category}
           onChange={changeHandle}
           required
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={inputClass}
         >
           <option value="" disabled>
-            Select Category
+            請選擇
           </option>
           <option value="men's clothing">男士衣裝</option>
           <option value="women's clothing">女士衣裝</option>
@@ -122,10 +110,10 @@ const ProductForm = ({ onSubmit, initialData, Cancel }) => {
           id="image"
           onChange={changeHandle}
           accept="image/*"
-          className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={inputClass}
         />
       </div>
-      <div className="flex">
+      <div className="flex space-x-4">
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition duration-300"
@@ -144,4 +132,4 @@ const ProductForm = ({ onSubmit, initialData, Cancel }) => {
   );
 };
 
-export default ProductForm;
+export default React.memo(ProductForm);

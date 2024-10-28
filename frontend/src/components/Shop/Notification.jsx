@@ -5,7 +5,7 @@ const Notification = ({ message, type, onClose }) => {
 
   return (
     <div
-      className={`z-50 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded shadow-lg text-white transition-all duration-300 ${
+      className={`z-20 fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 px-6 py-4 rounded shadow-lg text-white transition-all duration-300 ${
         type === "success" ? "bg-green-500" : "bg-red-500"
       }`}
     >

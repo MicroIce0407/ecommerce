@@ -10,7 +10,6 @@ const getOrder = async (req, res) => {
   try {
     const userId = req.params.userId;
     const orders = await Order.find({ userId });
-
     if (orders) {
       res.status(200).json(orders);
     } else {
@@ -23,7 +22,6 @@ const getOrder = async (req, res) => {
 
 const createOrder = async (req, res) => {
   const { items, totalPrice, userId, address, paymentMethod } = req.body;
-
   try {
     const detailedItems = await Promise.all(
       items.map(async (item) => {
@@ -31,7 +29,6 @@ const createOrder = async (req, res) => {
         if (!product) {
           throw new Error(`Product with ID ${item.productId} not found`);
         }
-
         return {
           productId: product._id,
           title: product.title,
@@ -50,19 +47,18 @@ const createOrder = async (req, res) => {
       paymentMethod,
       status: "pending",
     });
-
     await newOrder.save();
 
     if (paymentMethod === "paypal") {
       const paypalLink = await createPayPalPayment(newOrder);
-      res.status(200).json({ message: "Pay for success" });
+      res.status(200).json({ status: "pending", paymentUrl: paypalLink });
     } else if (paymentMethod === "homeDelivery") {
       await Order.findOneAndUpdate(
         { _id: newOrder._id },
         { status: "completed" }
       );
       await Cart.findOneAndDelete({ userId });
-      res.status(200).json({ message: "Pay for success" });
+      res.status(200).json({ status: "completed" });
     } else {
       res.status(400).json({ message: "Invalid payment method" });
     }
@@ -73,27 +69,26 @@ const createOrder = async (req, res) => {
 
 const payForSuccess = async (req, res) => {
   const { token, orderId, userId } = req.query;
-
   try {
     const request = new paypal.orders.OrdersCaptureRequest(token);
     request.requestBody({});
     const captureResponse = await paypalClient.execute(request);
 
     if (captureResponse.result.status === "COMPLETED") {
-      await Order.findOneAndUpdate({ _id: orderId }, { status: "completed" });
       await Cart.findOneAndDelete({ userId });
-      res.status(200).json({ message: "Pay for success" });
+      await Order.findOneAndUpdate({ _id: orderId }, { status: "completed" });
+      res.redirect(`${process.env.FRONTEND_URL}/order-confirmation`);
     } else {
-      res.status(400).json({ message: "Pay for failed" });
+      res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
     }
   } catch (error) {
     console.log("Error capturing PayPal order:", error);
-    res.status(400).json({ message: "Pay for failed" });
+    res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
   }
 };
 
 const payForCancel = async (req, res) => {
-  res.status(400).json({ message: "Pay for failed" });
+  res.redirect(`${process.env.FRONTEND_URL}/order-failed`);
 };
 
 module.exports = { getOrder, createOrder, payForSuccess, payForCancel };

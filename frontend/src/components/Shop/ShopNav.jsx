@@ -1,10 +1,12 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../Store/authSlice";
 import cartIcons from "../../picture/Icons/cart.png";
 import Cart from "./Cart";
 import Notification from "./Notification";
+
+const NOTIFICATION_TIMEOUT = 1500;
 
 const ShopNav = () => {
   const [showCart, setShowCart] = useState(false);
@@ -14,32 +16,35 @@ const ShopNav = () => {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
 
-  const showCartHandle = () => {
+  const showNotification = useCallback((message, type) => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, NOTIFICATION_TIMEOUT);
+  }, []);
+
+  const closeNotification = useCallback(() => {
+    setNotification(null);
+  }, []);
+
+  const showCartHandle = useCallback(() => {
     if (!auth.token) {
-      setNotification({ message: "請先登入", type: "error" });
-      closeNotification();
+      showNotification("請先登入", "error");
       navigate("/Authform");
     } else {
       setShowCart(true);
     }
-  };
+  }, [auth.token, navigate, showNotification]);
 
   const closeCartHandle = () => {
     setShowCart(false);
   };
 
-  const logoutHandle = () => {
+  const logoutHandle = useCallback(() => {
     dispatch(logout());
     navigate("/");
-    setNotification({ message: "登出成功", type: "success" });
-    closeNotification();
-  };
-
-  const closeNotification = () => {
-    setTimeout(() => {
-      setNotification(null);
-    }, 1500);
-  };
+    showNotification("登出成功", "success");
+  }, [dispatch, navigate, showNotification]);
 
   return (
     <>
@@ -50,7 +55,9 @@ const ShopNav = () => {
           onClose={closeNotification}
         />
       )}
-      {showCart && <Cart closeCart={closeCartHandle} />}
+      {showCart && (
+        <Cart closeCart={closeCartHandle} showNotification={showNotification} />
+      )}
       <div className="bg-orange-400 shadow-md p-4">
         <section className="flex items-center justify-between max-w-7xl mx-auto px-4">
           <div className="basis-1/4">

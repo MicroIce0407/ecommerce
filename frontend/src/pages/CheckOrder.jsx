@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import OrderItem from "../components/Shop/OrderItem";
+import withAuth from "../components/Shop/withAuth";
+
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-export default function CheckOrder() {
+const CheckOrder = () => {
   const [orders, setOrders] = useState([]);
   const userId = localStorage.getItem("userId");
 
@@ -10,8 +13,7 @@ export default function CheckOrder() {
     const getOrders = async () => {
       try {
         const response = await axios.get(`${backendUrl}/api/orders/${userId}`);
-        const ordersData = response.data;
-        setOrders(ordersData);
+        setOrders(response.data);
       } catch (error) {
         console.error("Error fetching orders", error);
       }
@@ -26,29 +28,13 @@ export default function CheckOrder() {
       </h1>
       <ul className="space-y-4">
         {orders.length > 0 ? (
-          orders.map((order) => (
-            <li key={order._id} className="p-4 border border-gray-300 rounded">
-              <h2 className="text-xl font-semibold mb-2">
-                訂單 ID : {order._id}
-              </h2>
-              <ul className="list-disc pl-5 space-y-2">
-                <div className="text-lg mb-2">購買商品:</div>
-                {order.items.map((item) => (
-                  <li key={item._id} className="text-gray-700">
-                    <span className="font-semibold">{item.title}</span> x{" "}
-                    {item.quantity}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 text-gray-800">總價: ${order.totalPrice}</p>
-              <p className="text-gray-800">付款方式: {order.paymentMethod}</p>
-              <p className="text-gray-800">狀態: {order.status}</p>
-            </li>
-          ))
+          orders.map((order) => <OrderItem key={order._id} order={order} />)
         ) : (
           <p className="text-center text-gray-600">暫無訂單紀錄</p>
         )}
       </ul>
     </div>
   );
-}
+};
+
+export default withAuth(CheckOrder);

@@ -1,9 +1,14 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import Decimal from "decimal.js";
+
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-// const storedCart = JSON.parse(localStorage.getItem("cartState"));
+const axiosInstance = axios.create({
+  baseURL: backendUrl,
+});
+
+const getUserId = () => localStorage.getItem("userId");
 
 const initialState = {
   items: [],
@@ -12,18 +17,22 @@ const initialState = {
   error: null,
 };
 
+const handleError = (error, thunkAPI) => {
+  return thunkAPI.rejectWithValue(
+    error.response?.data || "Something went wrong"
+  );
+};
+
 // Thunk 用於從後端獲取購物車數據
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, thunkAPI) => {
-    const userId = localStorage.getItem("userId");
+    const userId = getUserId();
     try {
-      const response = await axios.get(`${backendUrl}/api/cart/${userId}`);
-      return response.data.items; // 返回購物車商品數據
+      const response = await axiosInstance.get(`/api/cart/${userId}`);
+      return response.data.items;
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || "Error fetching cart"
-      );
+      return handleError(error, thunkAPI);
     }
   }
 );
@@ -32,22 +41,20 @@ export const fetchCart = createAsyncThunk(
 export const addItemToCart = createAsyncThunk(
   "cart/addItemToCart",
   async (product, thunkAPI) => {
-    const userId = localStorage.getItem("userId");
+    const userId = getUserId();
     const productId = product._id;
     const price = product.price;
 
     try {
-      await axios.post(`${backendUrl}/api/cart/add`, {
+      await axiosInstance.post(`/api/cart/add`, {
         userId,
         productId,
         quantity: 1,
         price,
       });
-      return product; // 返回商品詳細信息，用於更新狀態
+      return product;
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || "Error adding item to cart"
-      );
+      return handleError(error, thunkAPI);
     }
   }
 );
@@ -56,37 +63,34 @@ export const addItemToCart = createAsyncThunk(
 export const removeItemFromCart = createAsyncThunk(
   "cart/removeItemFromCart",
   async (productId, thunkAPI) => {
-    const userId = localStorage.getItem("userId");
+    const userId = getUserId();
 
     try {
-      await axios.post(`${backendUrl}/api/cart/remove`, {
+      await axiosInstance.post(`/api/cart/remove`, {
         userId,
         productId,
         quantity: 1,
       });
       return productId; // 返回商品 ID，用於從狀態中移除
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || "Error removing item from cart"
-      );
+      return handleError(error, thunkAPI);
     }
   }
 );
 
+// 清空購物車的 Thunk
 export const clearCart = createAsyncThunk(
   "cart/clearCart",
   async (_, thunkAPI) => {
-    const userId = localStorage.getItem("userId");
+    const userId = getUserId();
 
     try {
-      await axios.delete(`${backendUrl}/api/cart/clear`, {
+      await axiosInstance.delete(`/api/cart/clear`, {
         data: { userId },
       });
       return;
     } catch (error) {
-      return thunkAPI.rejectWithValue(
-        error.response?.data || "Error clearing cart"
-      );
+      return handleError(error, thunkAPI);
     }
   }
 );

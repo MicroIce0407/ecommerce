@@ -1,4 +1,5 @@
 import React from "react";
+import withAuth from "../components/Shop/withAuth";
 
 const OrderFailed = () => {
   return (
@@ -9,4 +10,4 @@ const OrderFailed = () => {
   );
 };
 
-export default OrderFailed;
+export default withAuth(OrderFailed);

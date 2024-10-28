@@ -24,7 +24,7 @@ const createPayPalPayment = async (order) => {
 
   try {
     const response = await paypalClient.execute(request);
-    return response.result.links.find((link) => link.rel === "approve").href; // 返回用户支付的链接
+    return response.result.links.find((link) => link.rel === "approve").href; // 返回用戶支付的連結
   } catch (error) {
     console.error("Error creating PayPal payment:", error);
     throw error;

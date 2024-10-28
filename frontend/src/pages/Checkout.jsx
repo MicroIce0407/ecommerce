@@ -1,41 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import withAuth from "../components/Shop/withAuth";
+
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const PAYMENT_OPTIONS = [
+  { value: "paypal", label: "Paypal" },
+  { value: "homeDelivery", label: "宅配-貨到付款" },
+];
 
 const Checkout = () => {
   const navigate = useNavigate();
   const cartItems = useSelector((state) => state.cart.items);
   const totalPrice = useSelector((state) => state.cart.totalPrice);
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("paypal");
   const userId = localStorage.getItem("userId");
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState(PAYMENT_OPTIONS[0].value);
 
-  const submitHandle = async (e) => {
-    e.preventDefault();
+  const submitHandle = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    const orderData = {
-      items: cartItems,
-      totalPrice,
-      userId,
-      address,
-      paymentMethod,
-    };
+      const orderData = {
+        items: cartItems,
+        totalPrice,
+        userId,
+        address,
+        paymentMethod,
+      };
 
-    try {
-      const response = await axios.post(`${backendUrl}/api/orders`, orderData);
+      try {
+        const response = await axios.post(
+          `${backendUrl}/api/orders`,
+          orderData
+        );
 
-      if (response.ok) {
-        navigate("/order-confirmation");
-      } else {
+        if (response.data.paymentUrl) {
+          window.location.href = response.data.paymentUrl;
+        } else if (response.data.status === "completed") {
+          navigate("/order-confirmation");
+        }
+      } catch (error) {
         navigate("/order-failed");
       }
-    } catch (error) {
-      console.error("Error during checkout:", error);
-    }
-  };
+    },
+    [address, cartItems, navigate, paymentMethod, totalPrice, userId]
+  );
 
   return (
     <div className="max-w-2xl mx-auto mt-8 p-8 bg-white shadow-md rounded-lg">
@@ -73,8 +84,11 @@ const Checkout = () => {
             onChange={(e) => setPaymentMethod(e.target.value)}
             className="w-full p-3 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
           >
-            <option value="paypal">Paypal</option>
-            <option value="homeDelivery">宅配-貨到付款</option>
+            {PAYMENT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
         <button

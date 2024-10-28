@@ -3,6 +3,7 @@ import ProductList from "../components/Shop/ProductList";
 import ProductForm from "../components/Shop/ProductForm";
 import axios from "axios";
 import withAuth from "../components/Shop/withAuth";
+
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const ProductManager = () => {
@@ -36,15 +37,19 @@ const ProductManager = () => {
     fetchProducts();
   }, [config, userId]);
 
-  const addProductHandle = async (productData) => {
+  const createFormData = (productData) => {
     const form = new FormData();
     form.append("title", productData.title);
     form.append("description", productData.description);
     form.append("price", productData.price);
     form.append("category", productData.category);
-    form.append("image", productData.image); // 文件上傳
-    form.append("userId", localStorage.getItem("userId"));
+    form.append("image", productData.image);
+    form.append("userId", userId);
+    return form;
+  };
 
+  const addProductHandle = async (productData) => {
+    const form = createFormData(productData);
     try {
       const response = await axios.post(`${backendUrl}/api/products`, form, {
         headers: {
@@ -61,14 +66,7 @@ const ProductManager = () => {
   };
 
   const editProductHandle = async (productData) => {
-    const form = new FormData();
-    form.append("title", productData.title);
-    form.append("description", productData.description);
-    form.append("price", productData.price);
-    form.append("category", productData.category);
-    form.append("image", productData.image); // 文件上傳
-    form.append("userId", localStorage.getItem("userId"));
-
+    const form = createFormData(productData);
     try {
       const response = await axios.put(
         `${backendUrl}/api/products/${productData._id}`,
@@ -87,7 +85,20 @@ const ProductManager = () => {
         )
       );
       setEditProduct(null);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error editing product", error);
+    }
+  };
+
+  const deleteProductHandle = async (prodrctId) => {
+    try {
+      await axios.delete(`${backendUrl}/api/products/${prodrctId}`, config);
+      setProducts((prev) =>
+        prev.filter((product) => product._id !== prodrctId)
+      );
+    } catch (error) {
+      console.error("Error deleting product", error);
+    }
   };
 
   const addNewProduct = () => {
@@ -97,17 +108,6 @@ const ProductManager = () => {
   const cancelHandle = () => {
     setEditProduct(null);
     setAddProduct(false);
-  };
-
-  const deleteProductHandle = async (prodrctId) => {
-    try {
-      await axios.delete(`${backendUrl}/api/products/${prodrctId}`);
-      setProducts((prev) =>
-        prev.filter((product) => product._id !== prodrctId)
-      );
-    } catch (error) {
-      console.error("Error deleting product", error);
-    }
   };
 
   return (

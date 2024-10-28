@@ -1,43 +1,44 @@
-import { useDispatch } from "react-redux";
-import { useLoaderData } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { addItemToCart } from "../components/Store/CartSlice";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import Notification from "../components/Shop/Notification";
+import { useCallback } from "react";
+
+const NOTIFICATION_TIMEOUT = 1500;
 
 const Goodspage = () => {
   const GoodData = useLoaderData(); // 使用 useLoaderData 獲取 loader 加載的數據
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const [notification, setNotification] = useState(null);
+  const { setNotification, closeNotification } = useOutletContext();
 
-  const AddToCart = (item) => {
-    if (!auth.token) {
-      setNotification({ message: "請先登入", type: "error" });
+  const showNotification = useCallback(
+    (message, type) => {
+      setNotification({ message, type });
+      if (type === "error") {
+        navigate("/Authform");
+      }
       setTimeout(() => {
         closeNotification();
-        navigate("/Authform");
-      }, 1000);
-    } else {
-      dispatch(addItemToCart(item));
-    }
-  };
+      }, NOTIFICATION_TIMEOUT);
+    },
+    [navigate, setNotification, closeNotification]
+  );
 
-  const closeNotification = () => {
-    setNotification(null);
-  };
+  const AddToCart = useCallback(
+    (item) => {
+      if (!auth.token) {
+        showNotification("請先登入", "error");
+      } else {
+        dispatch(addItemToCart(item));
+        showNotification("加入購物車成功!!", "success");
+      }
+    },
+    [auth.token, dispatch, showNotification]
+  );
 
   return (
     <>
-      {notification && (
-        <Notification
-          message={notification.message}
-          type={notification.type}
-          onClose={closeNotification}
-        />
-      )}
       <section className="m-12 p-8 flex flex-wrap items-center justify-center gap-12 bg-gray-50 rounded-lg shadow-md">
         <section className="flex items-center justify-center h-full w-full md:w-1/3 p-4">
           <img
