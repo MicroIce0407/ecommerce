@@ -1,12 +1,18 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../components/Store/authSlice";
 import ProductList from "../components/Shop/ProductList";
 import ProductForm from "../components/Shop/ProductForm";
-import axios from "axios";
 import withAuth from "../components/Shop/withAuth";
+import axios from "axios";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const ProductManager = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { showNotification } = useOutletContext();
   const [products, setProducts] = useState([]);
   const [editProduct, setEditProduct] = useState(null);
   const [addProduct, setAddProduct] = useState(false);
@@ -31,11 +37,19 @@ const ProductManager = () => {
         );
         setProducts(response.data);
       } catch (error) {
-        console.error("Error fetching products", error);
+        if (error.response && error.response.status === 401) {
+          if (error.response.data.message === "Token expired") {
+            showNotification("Token 已過期，請重新登入", "error");
+            dispatch(logout());
+            navigate("/Authform");
+          }
+        } else {
+          console.error("Error fetching products", error);
+        }
       }
     };
     fetchProducts();
-  }, [config, userId]);
+  }, [config, userId, navigate, showNotification, dispatch]);
 
   const createFormData = (productData) => {
     const form = new FormData();

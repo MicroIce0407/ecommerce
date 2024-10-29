@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import Input from "../components/Shop/Input";
@@ -6,12 +6,11 @@ import { login } from "../components/Store/authSlice";
 import axios from "axios";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
-const NOTIFICATION_TIMEOUT = 1500;
 
 const AuthForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { setNotification, closeNotification } = useOutletContext();
+  const { showNotification } = useOutletContext();
   const [mode, setMode] = useState("login");
   const [formData, setFormData] = useState({
     username: "",
@@ -37,24 +36,17 @@ const AuthForm = () => {
       if (mode === "login") {
         dispatch(login(response.data));
         showNotification("登入成功", "success");
-        navigate(-1);
+        navigate("/");
       } else {
-        setNotification("註冊成功", "success");
+        showNotification("註冊成功", "success");
       }
     } catch (error) {
-      setNotification("註冊/登入失敗", "error");
+      showNotification(
+        error.response?.data?.message || "註冊/登入失敗",
+        "error"
+      );
     }
   };
-
-  const showNotification = useCallback(
-    (message, type) => {
-      setNotification({ message, type });
-      setTimeout(() => {
-        closeNotification();
-      }, NOTIFICATION_TIMEOUT);
-    },
-    [closeNotification, setNotification]
-  );
 
   return (
     <div className="max-w-lg mx-auto my-8 p-8 bg-white shadow-md rounded-lg">

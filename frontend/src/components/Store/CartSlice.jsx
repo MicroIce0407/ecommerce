@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { logout } from "./authSlice";
 import axios from "axios";
 import Decimal from "decimal.js";
 
@@ -7,6 +8,19 @@ const backendUrl = process.env.REACT_APP_BACKEND_URL;
 const axiosInstance = axios.create({
   baseURL: backendUrl,
 });
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 const getUserId = () => localStorage.getItem("userId");
 
@@ -18,12 +32,16 @@ const initialState = {
 };
 
 const handleError = (error, thunkAPI) => {
-  return thunkAPI.rejectWithValue(
-    error.response?.data || "Something went wrong"
-  );
+  if (error.response && error.response.status === 401) {
+    thunkAPI.dispatch(logout());
+    return thunkAPI.rejectWithValue("Token expired. Please log in again.");
+  } else {
+    return thunkAPI.rejectWithValue(
+      error.response?.data || "Something went wrong"
+    );
+  }
 };
 
-// Thunk 用於從後端獲取購物車數據
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, thunkAPI) => {
@@ -37,7 +55,6 @@ export const fetchCart = createAsyncThunk(
   }
 );
 
-// 添加商品至購物車的 Thunk
 export const addItemToCart = createAsyncThunk(
   "cart/addItemToCart",
   async (product, thunkAPI) => {
@@ -59,7 +76,6 @@ export const addItemToCart = createAsyncThunk(
   }
 );
 
-// 移除商品的 Thunk
 export const removeItemFromCart = createAsyncThunk(
   "cart/removeItemFromCart",
   async (productId, thunkAPI) => {
@@ -71,14 +87,13 @@ export const removeItemFromCart = createAsyncThunk(
         productId,
         quantity: 1,
       });
-      return productId; // 返回商品 ID，用於從狀態中移除
+      return productId;
     } catch (error) {
       return handleError(error, thunkAPI);
     }
   }
 );
 
-// 清空購物車的 Thunk
 export const clearCart = createAsyncThunk(
   "cart/clearCart",
   async (_, thunkAPI) => {
@@ -107,7 +122,7 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        state.items = action.payload || [];
         state.totalPrice = action.payload.reduce((total, item) => {
           return new Decimal(total)
             .plus(new Decimal(item.totalPrice))
@@ -117,9 +132,10 @@ const cartSlice = createSlice({
       .addCase(fetchCart.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.items = [];
+        state.totalPrice = 0;
       })
 
-      // 新增 addItemToCart 的額外 reducers
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const newItem = action.payload;
         const existingItem = state.items.find(
@@ -147,7 +163,6 @@ const cartSlice = createSlice({
         state.error = action.payload;
       })
 
-      // 新增 removeItemFromCart 的額外 reducers
       .addCase(removeItemFromCart.fulfilled, (state, action) => {
         const id = action.payload;
         const existingItem = state.items.find(
@@ -175,7 +190,6 @@ const cartSlice = createSlice({
         state.error = action.payload;
       })
 
-      // 新增 clearCart 的額外 reducers
       .addCase(clearCart.fulfilled, (state) => {
         state.items = [];
         state.totalPrice = 0;

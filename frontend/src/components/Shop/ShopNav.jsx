@@ -56,7 +56,11 @@ const ShopNav = () => {
         />
       )}
       {showCart && (
-        <Cart closeCart={closeCartHandle} showNotification={showNotification} />
+        <Cart
+          closeCart={closeCartHandle}
+          showNotification={showNotification}
+          setShowCart={setShowCart}
+        />
       )}
       <div className="bg-orange-400 shadow-md p-4">
         <section className="flex items-center justify-between max-w-7xl mx-auto px-4">
@@ -108,7 +112,7 @@ const ShopNav = () => {
           <h1 className="text-3xl font-bold">叢林購物</h1>
         </nav>
       </div>
-      <Outlet context={{ setNotification, closeNotification }} />
+      <Outlet context={{ showNotification, closeNotification }} />
     </>
   );
 };

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { protect } = require("../middlewares/authMiddleware");
 const {
   addToCart,
   removeFromCart,
@@ -11,7 +12,7 @@ router.post("/add", addToCart);
 
 router.post("/remove", removeFromCart);
 
-router.get("/:userId", getCart);
+router.get("/:userId", protect, getCart);
 
 router.delete("/clear", deleteCart);
 

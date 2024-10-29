@@ -3,38 +3,24 @@ import { useLoaderData, useNavigate, useOutletContext } from "react-router-dom";
 import { addItemToCart } from "../components/Store/CartSlice";
 import { useCallback } from "react";
 
-const NOTIFICATION_TIMEOUT = 1500;
-
 const Goodspage = () => {
   const GoodData = useLoaderData(); // 使用 useLoaderData 獲取 loader 加載的數據
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
-  const { setNotification, closeNotification } = useOutletContext();
-
-  const showNotification = useCallback(
-    (message, type) => {
-      setNotification({ message, type });
-      if (type === "error") {
-        navigate("/Authform");
-      }
-      setTimeout(() => {
-        closeNotification();
-      }, NOTIFICATION_TIMEOUT);
-    },
-    [navigate, setNotification, closeNotification]
-  );
+  const { showNotification } = useOutletContext();
 
   const AddToCart = useCallback(
     (item) => {
       if (!auth.token) {
         showNotification("請先登入", "error");
+        navigate("/Authform");
       } else {
         dispatch(addItemToCart(item));
         showNotification("加入購物車成功!!", "success");
       }
     },
-    [auth.token, dispatch, showNotification]
+    [auth.token, dispatch, showNotification, navigate]
   );
 
   return (

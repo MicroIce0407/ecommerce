@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { protect } = require("../middlewares/authMiddleware");
 const {
   getOrder,
   createOrder,
@@ -13,6 +14,6 @@ router.get("/success", payForSuccess);
 
 router.get("/cancel", payForCancel);
 
-router.get("/:userId", getOrder);
+router.get("/:userId", protect, getOrder);
 
 module.exports = router;

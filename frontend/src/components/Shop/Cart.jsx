@@ -9,17 +9,21 @@ import {
 } from "../Store/CartSlice";
 import CartItem from "./CartItem";
 
-const Cart = ({ closeCart, showNotification }) => {
+const Cart = ({ closeCart, showNotification, setShowCart }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.items);
   const totalPrice = useSelector((state) => state.cart.totalPrice);
-  const loading = useSelector((state) => state.cart.loading);
-  const error = useSelector((state) => state.cart.error);
 
   useEffect(() => {
-    dispatch(fetchCart());
-  }, [dispatch]);
+    dispatch(fetchCart())
+      .unwrap()
+      .catch((error) => {
+        setShowCart(false);
+        showNotification("token過期，請重新登入", "error");
+        navigate("/Authform");
+      });
+  }, [dispatch, navigate, showNotification, setShowCart]);
 
   const addItemHandle = useCallback(
     (item) => {
@@ -47,16 +51,6 @@ const Cart = ({ closeCart, showNotification }) => {
     navigate("/checkout");
     closeCart();
   };
-
-  if (loading || error) {
-    return (
-      <div className="fixed inset-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white p-5 rounded-xl shadow-lg max-w-lg w-full">
-          <p>{loading ? "Loading..." : `Error: ${error}`}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div

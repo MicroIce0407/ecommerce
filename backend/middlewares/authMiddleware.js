@@ -13,11 +13,13 @@ const protect = (req, res, next) => {
       req.user = decoded;
       next();
     } catch (error) {
-      res.status(401).json({ message: "Not authorized, token failed" });
+      if (error.name === "TokenExpiredError") {
+        res.status(401).json({ message: "Token expired" });
+      } else {
+        res.status(401).json({ message: "Not authorized, invalid token" });
+      }
     }
-  }
-
-  if (!token) {
+  } else {
     res.status(401).json({ message: "Not authorized, no token" });
   }
 };
